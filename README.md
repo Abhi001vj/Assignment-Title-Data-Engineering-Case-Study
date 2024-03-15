@@ -103,7 +103,34 @@ valid_impressions_df.writeStream \
   .option("path", "/path/to/data/lake") \
   .start()
 ```
+**Cleaning**
+Cleaning our data involves apply constraints to make it easier for our models to extract signal from the data.
 
+- use domain expertise and EDA
+- apply constraints via filters
+- ensure data type consistency
+- removing data points with certain or null column values
+
+**Transformations**
+Transforming the data involves feature encoding and engineering.
+1. Scaling
+- required for models where the scale of the input affects the processes
+- learn constructs from train split and apply to other splits (local)
+- don't  scale features features like categorical features
+- standardization: rescale values to mean 0, std 1
+2. Encoding
+allows for representing data efficiently (maintains signal) and effectively (learns patterns, ex. one-hot vs embeddings)
+- label: unique index for categorical value
+- one-hot: representation as binary vector
+- embeddings: dense representations capable of representing context
+3. Extraction
+- signal extraction from existing features
+- combine existing features
+- transfer learning: using a pretrained model as a feature extractor and finetuning on it's results
+- autoencoders: learn to encode inputs for compressed knowledge representation
+- principle component analysis (PCA): linear dimensionality reduction to project data in a lower dimensional space.
+
+standardization: rescale values to mean 0, std 1
 #### Feature Extraction
 User Engagement Features: Extract metrics such as click-through rate (CTR), time spent on the ad, and interaction depth.
 Ad Performance Features: Calculate ad impressions, clicks, conversion rates, and cost per acquisition (CPA).
@@ -180,13 +207,32 @@ STORED AS PARQUET
 LOCATION '/path/to/data/lake/ad_impressions/';
 ```
 4. Error Handling and Monitoring
-**Objective**
-Monitor the data pipeline for any anomalies or failures, ensuring data quality and timely processing.
+Objective
+Develop a comprehensive monitoring system to detect data anomalies, drifts, discrepancies, or delays in real-time. Implement sophisticated alerting mechanisms to promptly address data quality issues, ensuring the effectiveness of ad campaigns is maintained.
 
 **Technologies**
-- Apache Airflow
-- Prometheus
-- Grafana
+- Apache Airflow for workflow management and error handling.
+- Prometheus for collecting metrics and monitoring system health.
+- Grafana for visualizing metrics and setting up dashboards.
+- Great Expectations for data validation and expectation suites.
+- Alibi-Detect for drift detection and outlier identification.
+**Advanced Monitoring Techniques**
+1. Drift Detection
+- Data Drift: Monitor the distribution of incoming data for significant changes compared to historical data. Utilize statistical tests like Kolmogorov-Smirnov (KS) for continuous features and Chi-squared tests for categorical features to detect drift.
+
+- Concept Drift: Detect shifts in the relationship between input data and output predictions. Implement adaptive models or triggers for retraining when concept drift is detected.
+
+- Model Performance Drift: Track sliding window performance metrics (e.g., accuracy, precision, recall) and compare them against historical performance to identify degradation.
+
+2. Anomaly and Outlier Detection
+Implement unsupervised methods to identify anomalous data points that deviate significantly from the norm. Techniques such as Isolation Forests, DBSCAN, or Autoencoder-based methods can be employed to flag unusual data for further inspection.
+**Expectation Suites**
+Use Great Expectations to define and validate data quality requirements. Expectations can include checks for missing values, data type validations, and range checks to ensure incoming data meets predefined standards.
+**Real-time Alerting and Incident Management**
+Define alerting thresholds based on the severity and impact of detected issues. Utilize tools like Grafana for dashboard alerts or integrate with incident management platforms like PagerDuty for real-time notifications.
+
+Implement a hierarchy of alerts to differentiate between critical issues that require immediate attention and warnings that can be reviewed in a regular maintenance window.
+
 Architecture Diagram
 ```
 +-------------------------+    +-----------------+
@@ -198,13 +244,15 @@ Architecture Diagram
                               +------+    +------+
                               | Alert|    |Dashboard|
                               +------+    +------+
-Sample Airflow Alert Configuration
 ```
+Sample implementing Alerting with Apache Airflow
 ```python
+Copy code
 from airflow import DAG
 from airflow.operators.email_operator import EmailOperator
 from datetime import datetime, timedelta
 
+# Define default arguments for the DAG
 default_args = {
     'owner': 'data_engineering',
     'depends_on_past': False,
@@ -215,23 +263,24 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
+# Define the DAG
 dag = DAG(
-    'ad_data_pipeline',
+    'ad_data_pipeline_monitoring',
     default_args=default_args,
-    description='Ad Data Pipeline with Error Alerts',
+    description='Monitoring Ad Data Pipeline',
     schedule_interval=timedelta(days=1),
     start_date=datetime(2024, 1, 1),
 )
 
+# Define a task for sending alert emails
 task_send_alert = EmailOperator(
     task_id='send_alert_email',
     to=['alert@advertisex.com'],
-    subject='Ad Data Pipeline Failure Alert',
-    html_content='''<h3>Ad Data Pipeline has encountered a failure.</h3>''',
+    subject='Ad Data Pipeline Alert',
+    html_content='''<h3>Alert: A potential issue has been detected in the ad data pipeline.</h3>''',
     dag=dag,
 )
 ```
-
 
 
 
