@@ -15,25 +15,33 @@ Data Format: Ad impressions data is generated in JSON format, containing informa
 
 Data Source: AdvertiseX tracks user interactions with ads, including clicks and conversions (e.g., sign-ups, purchases).
 Data Format: Click and conversion data is logged in CSV format and includes event timestamps, user IDs, ad campaign IDs, and conversion type.
+
 ## Bid Requests:
 
 ### Data Source: AdvertiseX participates in real-time bidding (RTB) auctions to serve ads to users.
+
 ### Data Format: Bid request data is received in a semi-structured format, mostly in Avro, and includes user information, auction details, and ad targeting criteria.
 
 ## Case Study Solution
+
 Detailed Data Engineering Solution for AdvertiseX
+
 ### Overview
 This solution is designed to efficiently process and analyze ad impressions, clicks/conversions, and bid requests data to optimize AdvertiseX's programmatic advertising campaigns. The system handles JSON, CSV, and Avro data formats, ensuring high throughput, data integrity, and actionable insights for campaign performance.
 
 1. Data Ingestion
+   
 **Objective**
 Build a robust data ingestion system capable of handling real-time and batch data in various formats.
 
 **Technologies**
+
 - Apache Kafka for real-time data ingestion
 - Apache NiFi or Apache Flume for data routing and preprocessing
 - Apache Avro for handling schema-based binary data formats
+  
 **Architecture Diagram**
+
 ```
 +-------------+    +-----------+    +------------+
 | Data Source | -> | Apache    | -> | Apache     |
@@ -47,25 +55,32 @@ Build a robust data ingestion system capable of handling real-time and batch dat
                             +----------------------+
 ```
 #### Implementation Steps
+
 **Setup Apache Kafka:**
 
 - Deploy Kafka brokers.
 - Create topics for ad impressions, clicks/conversions, and bid requests.
+  
 **Configure Apache NiFi:**
 
 - Create data flow processors for each data source type.
 - Transform and route data to the appropriate Kafka topics.
 
 Key Considerations:
+
 Schema Management: Implement schema registry for Avro data to manage versioning and compatibility.
 Data Normalization: Preprocess data to normalize varying formats and structures, ensuring consistency before ingestion into the processing system.
 Error Handling: Establish robust error handling mechanisms for malformed data, including retries, logging, and dead-letter queues.
+
 2. Data Processing
+
 **Objective**
 - Standardize, validate, and enrich incoming data.
 - Correlate ad impressions with clicks and conversions.
+
 **Technologies**
 - Apache Spark
+
 Architecture Diagram
 ```
 +------------+    +------------------+    +-----------------+
@@ -104,6 +119,7 @@ valid_impressions_df.writeStream \
   .start()
 ```
 **Cleaning**
+
 Cleaning our data involves apply constraints to make it easier for our models to extract signal from the data.
 
 - use domain expertise and EDA
@@ -112,6 +128,7 @@ Cleaning our data involves apply constraints to make it easier for our models to
 - removing data points with certain or null column values
 
 **Transformations**
+
 Transforming the data involves feature encoding and engineering.
 1. Scaling
 - required for models where the scale of the input affects the processes
@@ -131,28 +148,37 @@ allows for representing data efficiently (maintains signal) and effectively (lea
 - principle component analysis (PCA): linear dimensionality reduction to project data in a lower dimensional space.
 
 standardization: rescale values to mean 0, std 1
+
 #### Feature Extraction
+
 User Engagement Features: Extract metrics such as click-through rate (CTR), time spent on the ad, and interaction depth.
 Ad Performance Features: Calculate ad impressions, clicks, conversion rates, and cost per acquisition (CPA).
 Contextual Features: Include data about the user's device, location, time of day, and the content surrounding the ad impression.
+
 **Common Metrics and KPIs**
+
 - Click-Through Rate (CTR): The ratio of users who click on an ad to the number of total users who view the ad (impressions).
 - Conversion Rate: The percentage of clicks that resulted in a conversion action (e.g., purchase, sign-up).
 - Return on Advertising Spend (ROAS): The amount of revenue generated for every dollar spent on advertising.
 - Cost Per Click (CPC) and Cost Per Thousand Impressions (CPM): Key cost metrics for campaign performance evaluation.
+
 **Data Enrichment**
 - Temporal Enrichment: Add features related to time, such as part of the day, weekday vs. weekend, and seasonality.
 - Geographical Enrichment: Enhance data with geographical insights, such as region-specific performance and user demographics.
 - Behavioral Segmentation: Classify users based on their interaction patterns and history to tailor future ad delivery.
+
 #### Visualization and Reporting
+
 **Objective:** Leverage data visualization and reporting tools to create actionable insights and intuitive dashboards for campaign performance monitoring.
 
 **Visualization Techniques**
+
 - Time Series Analysis: Visualize trends over time for key metrics like CTR, CPC, and conversion rates.
 - Geographical Heatmaps: Display performance metrics across different regions to identify high and low-performing areas.
 - Funnel Analysis: Create funnels to visualize the conversion path from impressions to clicks to conversions, identifying drop-off points.
 
 #### Dashboard and Reporting Tools
+
 - Apache Superset or Grafana for real-time analytics dashboards.
 - Tableau or Power BI for in-depth analysis and interactive reporting.
 - Integration with Apache Airflow for automated reporting workflows and alerts based on performance thresholds.
@@ -161,13 +187,18 @@ KPIs and Alerts
 - Customizable dashboard widgets to track the performance of specific campaigns, ad groups, or creatives against their targets.
 
 3. Data Storage and Query Performance
+   
 **Objective**
+
 - Efficiently store processed data, enabling fast and flexible querying for analytics.
 - Utilize a real-time NoSQL database for immediate data access and analysis.
+  
 **Technologies**
+
 - Amazon Redshift
 - Apache Hadoop HDFS + Hive
 - Real-time NoSQL database (e.g., Apache Cassandra, MongoDB)
+
 Architecture Diagram
 ```
 +------------------+    +-------------------+
@@ -186,12 +217,15 @@ Architecture Diagram
 
 ```
 Implementation Steps
+
 Data Lake Storage:
 
 Store processed data in HDFS using Parquet format.
+
 Data Warehousing:
 
 Use Amazon Redshift for analytical queries.
+
 Real-time NoSQL Database:
 
 Deploy a NoSQL database for real-time data querying and analysis.
@@ -207,6 +241,7 @@ STORED AS PARQUET
 LOCATION '/path/to/data/lake/ad_impressions/';
 ```
 4. Error Handling and Monitoring
+
 Objective
 Develop a comprehensive monitoring system to detect data anomalies, drifts, discrepancies, or delays in real-time. Implement sophisticated alerting mechanisms to promptly address data quality issues, ensuring the effectiveness of ad campaigns is maintained.
 
@@ -216,7 +251,9 @@ Develop a comprehensive monitoring system to detect data anomalies, drifts, disc
 - Grafana for visualizing metrics and setting up dashboards.
 - Great Expectations for data validation and expectation suites.
 - Alibi-Detect for drift detection and outlier identification.
+
 **Advanced Monitoring Techniques**
+
 1. Drift Detection
 - Data Drift: Monitor the distribution of incoming data for significant changes compared to historical data. Utilize statistical tests like Kolmogorov-Smirnov (KS) for continuous features and Chi-squared tests for categorical features to detect drift.
 
@@ -226,7 +263,9 @@ Develop a comprehensive monitoring system to detect data anomalies, drifts, disc
 
 2. Anomaly and Outlier Detection
 Implement unsupervised methods to identify anomalous data points that deviate significantly from the norm. Techniques such as Isolation Forests, DBSCAN, or Autoencoder-based methods can be employed to flag unusual data for further inspection.
+
 **Expectation Suites**
+
 Use Great Expectations to define and validate data quality requirements. Expectations can include checks for missing values, data type validations, and range checks to ensure incoming data meets predefined standards.
 **Real-time Alerting and Incident Management**
 Define alerting thresholds based on the severity and impact of detected issues. Utilize tools like Grafana for dashboard alerts or integrate with incident management platforms like PagerDuty for real-time notifications.
