@@ -29,9 +29,10 @@ This solution is designed to efficiently process and analyze ad impressions, cli
 **Objective**
 Build a robust data ingestion system capable of handling real-time and batch data in various formats.
 
-- Technologies
-- Apache Kafka
-- Apache NiFi
+**Technologies**
+- Apache Kafka for real-time data ingestion
+- Apache NiFi or Apache Flume for data routing and preprocessing
+- Apache Avro for handling schema-based binary data formats
 **Architecture Diagram**
 ```
 +-------------+    +-----------+    +------------+
@@ -54,27 +55,11 @@ Build a robust data ingestion system capable of handling real-time and batch dat
 
 - Create data flow processors for each data source type.
 - Transform and route data to the appropriate Kafka topics.
-Sample Configuration
-NiFi Processor for JSON:
-```xml
-<processor>
-  <id>GetFile-JSON</id>
-  <type>GetFile</type>
-  <properties>
-    <property name="Input Directory" value="/path/to/json/files" />
-    <property name="File Filter" value=".*\.json" />
-  </properties>
-</processor>
 
-<processor>
-  <id>PublishKafka-JSON</id>
-  <type>PublishKafka</type>
-  <properties>
-    <property name="Kafka Brokers" value="kafka-broker:9092" />
-    <property name="Topic Name" value="ad-impressions-topic" />
-  </properties>
-</processor>
-```
+Key Considerations:
+Schema Management: Implement schema registry for Avro data to manage versioning and compatibility.
+Data Normalization: Preprocess data to normalize varying formats and structures, ensuring consistency before ingestion into the processing system.
+Error Handling: Establish robust error handling mechanisms for malformed data, including retries, logging, and dead-letter queues.
 2. Data Processing
 **Objective**
 - Standardize, validate, and enrich incoming data.
@@ -118,6 +103,36 @@ valid_impressions_df.writeStream \
   .option("path", "/path/to/data/lake") \
   .start()
 ```
+
+#### Feature Extraction
+User Engagement Features: Extract metrics such as click-through rate (CTR), time spent on the ad, and interaction depth.
+Ad Performance Features: Calculate ad impressions, clicks, conversion rates, and cost per acquisition (CPA).
+Contextual Features: Include data about the user's device, location, time of day, and the content surrounding the ad impression.
+**Common Metrics and KPIs**
+- Click-Through Rate (CTR): The ratio of users who click on an ad to the number of total users who view the ad (impressions).
+- Conversion Rate: The percentage of clicks that resulted in a conversion action (e.g., purchase, sign-up).
+- Return on Advertising Spend (ROAS): The amount of revenue generated for every dollar spent on advertising.
+- Cost Per Click (CPC) and Cost Per Thousand Impressions (CPM): Key cost metrics for campaign performance evaluation.
+**Data Enrichment**
+- Temporal Enrichment: Add features related to time, such as part of the day, weekday vs. weekend, and seasonality.
+- Geographical Enrichment: Enhance data with geographical insights, such as region-specific performance and user demographics.
+- Behavioral Segmentation: Classify users based on their interaction patterns and history to tailor future ad delivery.
+#### Visualization and Reporting
+**Objective:** Leverage data visualization and reporting tools to create actionable insights and intuitive dashboards for campaign performance monitoring.
+
+**Visualization Techniques**
+- Time Series Analysis: Visualize trends over time for key metrics like CTR, CPC, and conversion rates.
+- Geographical Heatmaps: Display performance metrics across different regions to identify high and low-performing areas.
+- Funnel Analysis: Create funnels to visualize the conversion path from impressions to clicks to conversions, identifying drop-off points.
+
+#### Dashboard and Reporting Tools
+- Apache Superset or Grafana for real-time analytics dashboards.
+- Tableau or Power BI for in-depth analysis and interactive reporting.
+- Integration with Apache Airflow for automated reporting workflows and alerts based on performance thresholds.
+KPIs and Alerts
+- Set up real-time alerts for significant changes in KPIs (e.g., sudden drops in CTR or spikes in CPC), allowing quick response to potential issues.
+- Customizable dashboard widgets to track the performance of specific campaigns, ad groups, or creatives against their targets.
+
 3. Data Storage and Query Performance
 **Objective**
 - Efficiently store processed data, enabling fast and flexible querying for analytics.
